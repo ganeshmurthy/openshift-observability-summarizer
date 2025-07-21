@@ -2,6 +2,30 @@ servingRuntime:
   image: quay.io/ecosystem-appeng/vllm:openai-v0.8.5
   recommendedAccelerators:
     - nvidia.com/gpu
+  volumeMounts:
+    - mountPath: /dev/shm
+      name: shm
+    - mountPath: /vllm
+      name: vllm-home
+    # Add this for model storage
+    - mountPath: /vllm/model
+      name: model-storage
+  volumes:
+    - emptyDir:
+        medium: Memory
+        sizeLimit: 2Gi
+      name: shm
+    - emptyDir:
+        sizeLimit: 5Gi
+      name: vllm-home
+    # Add this for model storage
+    - name: model-storage
+      persistentVolumeClaim:
+        claimName: model-pvc
+
+secret:
+  enabled: true
+  hf_token: ""
 
 models:
   llama-3-2-1b-instruct:

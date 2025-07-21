@@ -136,6 +136,25 @@ make install NAMESPACE=your-namespace \
 make install NAMESPACE=your-namespace ALERTS=TRUE
 ```
 
+### GPU Accelerator Types
+
+The deployment supports multiple GPU accelerator types. Use the `ACCELERATOR_TYPE` parameter to specify your GPU hardware:
+
+#### NVIDIA GPUs (default)
+```bash
+make install NAMESPACE=your-namespace ACCELERATOR_TYPE=nvidia.com/gpu
+```
+
+#### Habana Gaudi
+```bash
+make install NAMESPACE=your-namespace ACCELERATOR_TYPE=habana.ai/gaudi
+```
+
+#### AMD GPUs
+```bash
+make install NAMESPACE=your-namespace ACCELERATOR_TYPE=amd.com/gpu
+```
+
 This deploys:
 - **llm-service** - LLM inference 
 - **llama-stack** - Backend API

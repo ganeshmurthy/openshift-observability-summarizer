@@ -20,6 +20,25 @@ METRIC_UI_RELEASE_NAME ?= ui
 METRIC_UI_CHART_PATH ?= ui
 TOLERATIONS_TEMPLATE=[{"key":"$(1)","effect":"NoSchedule","operator":"Exists"}]
 
+# Accelerator type configuration
+# Valid values: nvidia.com/gpu, habana.ai/gaudi, amd.com/gpu
+ACCELERATOR_TYPE ?= nvidia.com/gpu
+
+# Validate ACCELERATOR_TYPE
+VALID_ACCELERATORS := nvidia.com/gpu habana.ai/gaudi amd.com/gpu
+ifeq ($(filter $(ACCELERATOR_TYPE),$(VALID_ACCELERATORS)),)
+$(error Invalid ACCELERATOR_TYPE: $(ACCELERATOR_TYPE). Valid values are: $(VALID_ACCELERATORS))
+endif
+
+# Map accelerator type to values file
+ifeq ($(ACCELERATOR_TYPE),nvidia.com/gpu)
+VALUES_FILE := values-nvidia-gpu.yaml
+else ifeq ($(ACCELERATOR_TYPE),habana.ai/gaudi)
+VALUES_FILE := values-gaudi-gpu.yaml
+else ifeq ($(ACCELERATOR_TYPE),amd.com/gpu)
+VALUES_FILE := values-amd-gpu.yaml
+endif
+
 # Unified model configuration map
 # Contains all model details: external/internal, API key requirements, service mappings
 # Load model configuration from separate JSON file
@@ -96,6 +115,7 @@ help:
 	@echo ""
 	@echo "Configuration options (set via environment variables or make arguments):"
 	@echo "  NAMESPACE                - Target namespace (default: llama-stack-rag)"
+	@echo "  ACCELERATOR_TYPE         - GPU accelerator type: nvidia.com/gpu, habana.ai/gaudi, amd.com/gpu (default: nvidia.com/gpu)"
 	@echo "  HF_TOKEN                 - Hugging Face Token (will prompt if not provided)"
 	@echo "  DEVICE                	  - Deploy models on cpu or gpu (default)"
 	@echo "  {SAFETY,LLM}             - Model id as defined in values (eg. llama-3-2-1b-instruct)"
@@ -106,6 +126,10 @@ help:
 	@echo "  CUSTOM_INGESTION_PIPELINE_VALUES - Custom ingestion pipeline values (full path)"
 	@echo "  CUSTOM_INGESTION_PIPELINE_NAME   - Custom ingestion pipeline name"
 	@echo "  LLAMA_STACK_ENV          - List of environment variables for llama-stack (eg. {TAVILY_SEARCH_API_KEY: \"<Your Tavily Search API Key here>\"})"
+	@echo ""
+	@echo "Current configuration:"
+	@echo "  ACCELERATOR_TYPE: $(ACCELERATOR_TYPE)"
+	@echo "  VALUES_FILE: $(VALUES_FILE)"
 
 
 # Create namespace and deploy
@@ -164,8 +188,10 @@ install-rag: namespace
 	@$(eval LLAMA_STACK_ARGS := $(call helm_llama_stack_args))
 	@$(eval PGVECTOR_ARGS := $(call helm_pgvector_args))
 	@echo "Installing $(RAG_CHART) helm chart (backend services only)"
+	@echo "Using accelerator type: $(ACCELERATOR_TYPE) with values file: $(VALUES_FILE)"
 	@helm -n $(NAMESPACE) upgrade --install $(RAG_CHART) $(RAG_CHART) \
 	--atomic --timeout 10m \
+	-f $(VALUES_FILE) \
 	$(LLM_SERVICE_ARGS) \
 	$(LLAMA_STACK_ARGS) \
 	$(PGVECTOR_ARGS)
