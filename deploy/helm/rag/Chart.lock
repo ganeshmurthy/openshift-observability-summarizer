@@ -1,12 +1,12 @@
 dependencies:
 - name: llm-service
-  repository: https://ganeshmurthy.github.io/ai-architecture-charts/FOLSOM-GAUDI/
+  repository: file://../../../../ai-architecture-charts/llm-service/helm
   version: 0.1.0
 - name: llama-stack
-  repository: https://ganeshmurthy.github.io/ai-architecture-charts/FOLSOM-GAUDI/
+  repository: file://../../../../ai-architecture-charts/llama-stack/helm
   version: 0.2.9
 - name: pgvector
-  repository: https://ganeshmurthy.github.io/ai-architecture-charts/FOLSOM-GAUDI/
+  repository: file://../../../../ai-architecture-charts/pgvector/helm
   version: 0.1.0
-digest: sha256:f492dc5f61f7935bbdd9ff8626b6a0be36738e5d37277e64783b166f6433a1e0
-generated: "2025-06-30T11:46:23.027461822+03:00"
+digest: sha256:6336aed5f32ef13c035be201d87a04696f029435c44f7f5665af3a6f05a507e8
+generated: "2025-07-22T17:39:19.582671906-04:00"
