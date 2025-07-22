@@ -1,6 +1,6 @@
 apiVersion: v2
-name: rag
-description: A Helm chart for Kubernetes
+name: metric-summarizer
+description: AI-powered observability and monitoring solution for OpenShift clusters
 type: application
 version: 0.1.0
 appVersion: "1.16.0"

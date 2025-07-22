@@ -13,7 +13,7 @@ POSTGRES_USER ?= postgres
 POSTGRES_PASSWORD ?= rag_password
 POSTGRES_DBNAME ?= rag_blueprint
 HF_TOKEN ?= $(shell bash -c 'read -r -p "Enter Hugging Face Token: " HF_TOKEN; echo $$HF_TOKEN')
-RAG_CHART := rag
+
 METRIC_MCP_RELEASE_NAME ?= metric-mcp
 METRIC_MCP_CHART_PATH ?= metric-mcp
 METRIC_UI_RELEASE_NAME ?= ui
@@ -122,12 +122,12 @@ namespace:
 .PHONY: depend
 depend:
 	@echo "Updating Helm dependencies..."
-	@helm dependency update $(RAG_CHART) || exit 1
+	@helm dependency update . || exit 1
 
 
 .PHONY: list-models
 list-models: depend
-	@helm template dummy-release $(RAG_CHART) --set llm-service._debugListModels=true | grep ^model:
+	@helm template dummy-release . --set llm-service._debugListModels=true | grep ^model:
 
 .PHONY: install-metric-mcp
 install-metric-mcp: namespace
@@ -163,15 +163,15 @@ install-rag: namespace
 	@$(eval LLM_SERVICE_ARGS := $(call helm_llm_service_args))
 	@$(eval LLAMA_STACK_ARGS := $(call helm_llama_stack_args))
 	@$(eval PGVECTOR_ARGS := $(call helm_pgvector_args))
-	@echo "Installing $(RAG_CHART) helm chart (backend services only)"
-	@helm -n $(NAMESPACE) upgrade --install $(RAG_CHART) $(RAG_CHART) \
+	@echo "Installing helm chart (backend services only)"
+	@helm -n $(NAMESPACE) upgrade --install metric-summarizer . \
 	--atomic --timeout 10m \
 	$(LLM_SERVICE_ARGS) \
 	$(LLAMA_STACK_ARGS) \
 	$(PGVECTOR_ARGS)
 	@echo "Waiting for model services to deploy. It will take around 10-15 minutes depending on the size of the model..."
 	@oc wait -n $(NAMESPACE) --for=condition=Ready --timeout=60m inferenceservice --all ||:
-	@echo "$(RAG_CHART) installed successfully"
+	@echo "Helm chart installed successfully"
 
 .PHONY: install
 install: namespace depend install-rag install-metric-mcp install-metric-ui delete-jobs
@@ -184,8 +184,8 @@ install: namespace depend install-rag install-metric-mcp install-metric-ui delet
 # Uninstall the deployment and clean up
 .PHONY: uninstall
 uninstall:
-	@echo "Uninstalling $(RAG_CHART) helm chart"
-	@helm -n $(NAMESPACE) uninstall $(RAG_CHART)
+	@echo "Uninstalling helm chart"
+	@helm -n $(NAMESPACE) uninstall metric-summarizer
 	@echo "Removing pgvector and minio PVCs from $(NAMESPACE)"
 	@oc get pvc -n $(NAMESPACE) -o custom-columns=NAME:.metadata.name | grep -E '^(pg|minio)-data' | xargs -I {} oc delete pvc -n $(NAMESPACE) {} ||:
 	@if helm list -n $(NAMESPACE) -q | grep -q "^$(ALERTING_RELEASE_NAME)$$"; then \
