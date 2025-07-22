@@ -24,18 +24,18 @@ spec:
         name: vLLM
       name: ""
       resources:
-      {{- if hasKey $model.inferenceService "resources" }}
-      {{- toYaml $model.inferenceService.resources | nindent 8 }}
-      {{- else }}
-        limits:
-          cpu: "2"
-          memory: 8Gi
-          habana.ai/gaudi: "1"
-        requests:
-          cpu: "1"
-          memory: 4Gi
-          habana.ai/gaudi: "1"
-      {{- end }}
+        {{- if hasKey $model.inferenceService "resources" }}
+        {{- toYaml $model.inferenceService.resources | nindent 8 }}
+        {{- else }}
+          limits:
+            cpu: "2"
+            memory: 8Gi
+            habana.ai/gaudi: "1"
+          requests:
+            cpu: "1"
+            memory: 4Gi
+            habana.ai/gaudi: "1"
+        {{- end }}
       runtime: {{ $root.Values.servingRuntime.name }}
       storageUri: pvc://{{ $key }}/
       args:
